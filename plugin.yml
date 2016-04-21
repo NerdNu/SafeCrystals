@@ -1,0 +1,14 @@
+name: ${project.name}
+version: ${project.version}
+author: totemo
+authors: [totemo]
+description: ${project.description}
+website: ${project.url}
+main: nu.nerd.safecrystals.SafeCrystals
+
+depend: [WorldGuard]
+
+permissions: {}
+
+commands: {}
+
