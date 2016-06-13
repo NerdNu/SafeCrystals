@@ -32,6 +32,15 @@ import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
  * Ender Crystal in a region.
  */
 public class SafeCrystals extends JavaPlugin implements Listener {
+    /**
+     * Singleton-like reference to this plugin.
+     */
+    public static SafeCrystals PLUGIN;
+
+    /**
+     * Configuration instance.
+     */
+    public static Configuration CONFIG = new Configuration();
 
     // ------------------------------------------------------------------------
     /**
@@ -39,6 +48,10 @@ public class SafeCrystals extends JavaPlugin implements Listener {
      */
     @Override
     public void onEnable() {
+        PLUGIN = this;
+        saveDefaultConfig();
+        CONFIG.reload();
+
         _worldGuard = (WorldGuardPlugin) getServer().getPluginManager().getPlugin("WorldGuard");
         Bukkit.getPluginManager().registerEvents(this, this);
     }
@@ -110,11 +123,41 @@ public class SafeCrystals extends JavaPlugin implements Listener {
         Location loc = crystal.getLocation();
         if (_worldGuard.canBuild(player, loc)) {
             crystal.remove();
-            loc.getWorld().dropItemNaturally(loc, new ItemStack(Material.END_CRYSTAL));
+            String suppressed;
+            if (isDragonSpawningCrystal(loc)) {
+                suppressed = " - drop suppressed because dragon may spawn";
+            } else {
+                loc.getWorld().dropItemNaturally(loc, new ItemStack(Material.END_CRYSTAL));
+                suppressed = "";
+            }
             getLogger().info(player.getName() + " broke an Ender Crystal at " +
                              loc.getWorld().getName() + ", " +
-                             loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ());
+                             loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + suppressed);
         }
+    }
+
+    // ------------------------------------------------------------------------
+    /**
+     * Return true if the crystal is in a position that can be used to summon
+     * the dragon.
+     *
+     * When summoning the dragon, players can break the crystals on the frame
+     * before the dragon CreatureSpawnEvent (reason DEFAULT) occurs, and
+     * potentially recover them, if they don't burn up in the fire underneath.
+     * This method is used to detect that situation and prevent recovery of the
+     * crystals.
+     *
+     * Getting delicate about the exact coordinates of the crystal won't work
+     * because a determined player will move the crystals with pistons
+     * (verified). Any crystals too close to the portal would normally be blown
+     * up by the explosion when the dragon spawns, anyway.
+     *
+     * @param loc the location of the crystal.
+     * @return true if the crystal is in a position that can be used to summon
+     *         the dragon.
+     */
+    protected boolean isDragonSpawningCrystal(Location loc) {
+        return (loc.distance(CONFIG.END_PORTAL_LOCATION) < CONFIG.END_PORTAL_RADIUS);
     }
 
     // ------------------------------------------------------------------------
