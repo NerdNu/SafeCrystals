@@ -4,7 +4,7 @@
 	<groupId>nu.nerd</groupId>
 	<name>SafeCrystals</name>
 	<artifactId>${project.name}</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.1</version>
 	<packaging>jar</packaging>
 	<description>Prevent Ender Crystals from exploding and breaking blocks or damaging entities.</description>
 	<url>https://github.com/totemo/${project.name}</url>

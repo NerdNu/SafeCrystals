@@ -157,7 +157,8 @@ public class SafeCrystals extends JavaPlugin implements Listener {
      *         the dragon.
      */
     protected boolean isDragonSpawningCrystal(Location loc) {
-        return (loc.distance(CONFIG.END_PORTAL_LOCATION) < CONFIG.END_PORTAL_RADIUS);
+        return loc.getWorld().equals(CONFIG.END_PORTAL_LOCATION.getWorld()) &&
+               loc.distance(CONFIG.END_PORTAL_LOCATION) < CONFIG.END_PORTAL_RADIUS;
     }
 
     // ------------------------------------------------------------------------
