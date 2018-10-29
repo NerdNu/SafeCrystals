@@ -1,10 +1,11 @@
 name: ${project.name}
 version: ${project.version}
 author: totemo
-authors: [totemo]
+authors: [totemo, bermudalocket]
 description: ${project.description}
 website: ${project.url}
 main: nu.nerd.safecrystals.SafeCrystals
+api-version: 1.13
 
 depend: [WorldGuard]
 

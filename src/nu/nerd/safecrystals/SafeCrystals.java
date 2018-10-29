@@ -1,5 +1,9 @@
 package nu.nerd.safecrystals;
 
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldguard.LocalPlayer;
+import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -17,8 +21,6 @@ import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 
 // ----------------------------------------------------------------------------
 /**
@@ -106,7 +108,7 @@ public class SafeCrystals extends JavaPlugin implements Listener {
     public void onPlayerInteract(PlayerInteractEvent event) {
         if (event.getMaterial() == Material.END_CRYSTAL && event.getAction() == Action.RIGHT_CLICK_BLOCK) {
             Block destination = event.getClickedBlock().getRelative(BlockFace.UP);
-            if (!_worldGuard.canBuild(event.getPlayer(), destination.getLocation())) {
+            if (!canBuild(event.getPlayer(), destination.getLocation())) {
                 event.setCancelled(true);
             }
         }
@@ -121,7 +123,7 @@ public class SafeCrystals extends JavaPlugin implements Listener {
      */
     protected void tryBreakEnderCrystal(Entity crystal, Player player) {
         Location loc = crystal.getLocation();
-        if (_worldGuard.canBuild(player, loc)) {
+        if (canBuild(player, loc)) {
             crystal.remove();
             String suppressed;
             if (isDragonSpawningCrystal(loc)) {
@@ -159,6 +161,21 @@ public class SafeCrystals extends JavaPlugin implements Listener {
     protected boolean isDragonSpawningCrystal(Location loc) {
         return loc.getWorld().equals(CONFIG.END_PORTAL_LOCATION.getWorld()) &&
                loc.distance(CONFIG.END_PORTAL_LOCATION) < CONFIG.END_PORTAL_RADIUS;
+    }
+
+    // ------------------------------------------------------------------------
+    /**
+     * Returns true if the given player can build at the given location.
+     * Effectively replaces the lost functionality of WorldGuardPlugin#canBuild.
+     *
+     * @param player the player.
+     * @param location the location.
+     * @return true if the given player can build at the given location.
+     */
+    private boolean canBuild(Player player, Location location) {
+        com.sk89q.worldedit.util.Location wrappedLocation = BukkitAdapter.adapt(location);
+        LocalPlayer localPlayer = _worldGuard.wrapPlayer(player);
+        return WorldGuard.getInstance().getPlatform().getRegionContainer().createQuery().testBuild(wrappedLocation, localPlayer);
     }
 
     // ------------------------------------------------------------------------
