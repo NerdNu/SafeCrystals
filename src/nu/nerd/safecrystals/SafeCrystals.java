@@ -1,12 +1,9 @@
 package nu.nerd.safecrystals;
 
-import com.sk89q.worldedit.bukkit.BukkitAdapter;
-import com.sk89q.worldguard.LocalPlayer;
-import com.sk89q.worldguard.WorldGuard;
-import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
@@ -21,6 +18,11 @@ import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldguard.LocalPlayer;
+import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 
 // ----------------------------------------------------------------------------
 /**
@@ -60,14 +62,13 @@ public class SafeCrystals extends JavaPlugin implements Listener {
 
     // ------------------------------------------------------------------------
     /**
-     * Prevent Ender Crystals from exploding.
-     *
-     * Remove and drop as item when appropriate.
+     * Prevent Ender Crystals from exploding, except in the case of those on
+     * bedrock in the end.
      */
     @EventHandler(ignoreCancelled = true)
     public void onEntityExplode(EntityExplodeEvent event) {
         Entity entity = event.getEntity();
-        if (entity.getType() == EntityType.ENDER_CRYSTAL) {
+        if (entity.getType() == EntityType.ENDER_CRYSTAL && !isDragonFightCrystal(entity.getLocation())) {
             event.setCancelled(true);
         }
     }
@@ -83,6 +84,11 @@ public class SafeCrystals extends JavaPlugin implements Listener {
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
         Entity entity = event.getEntity();
         if (entity.getType() == EntityType.ENDER_CRYSTAL) {
+            if (isDragonFightCrystal(entity.getLocation())) {
+                // Vanilla handlilng.
+                return;
+            }
+
             event.setCancelled(true);
 
             if (event.getDamager() instanceof Player) {
@@ -176,6 +182,23 @@ public class SafeCrystals extends JavaPlugin implements Listener {
         com.sk89q.worldedit.util.Location wrappedLocation = BukkitAdapter.adapt(location);
         LocalPlayer localPlayer = _worldGuard.wrapPlayer(player);
         return WorldGuard.getInstance().getPlatform().getRegionContainer().createQuery().testBuild(wrappedLocation, localPlayer);
+    }
+
+    // ------------------------------------------------------------------------
+    /**
+     * Return true if the crystal is associated with the dragon fight.
+     * 
+     * For this purpose, any crystal on bedrock in the end is assumed to be part
+     * of the dragon fight. These crystals are not protected (they will behave
+     * as in vanilla).
+     * 
+     * @param loc the location of the end crystal.
+     * @return true if the crystal is associated with the dragon fight.
+     */
+    private static boolean isDragonFightCrystal(Location loc) {
+        Block blockUnder = loc.getBlock().getRelative(0, -1, 0);
+        return loc.getWorld().getEnvironment() == Environment.THE_END &&
+               blockUnder != null && blockUnder.getType() == Material.BEDROCK;
     }
 
     // ------------------------------------------------------------------------
