@@ -80,7 +80,7 @@ public class SafeCrystals extends JavaPlugin implements Listener {
      * If the damager is a player who can build, drop the crystal as an item.
      * Projectiles are handled the same as the player who shot them.
      */
-    @EventHandler()
+    @EventHandler(ignoreCancelled = true)
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
         Entity entity = event.getEntity();
         if (entity.getType() == EntityType.ENDER_CRYSTAL) {
@@ -110,7 +110,7 @@ public class SafeCrystals extends JavaPlugin implements Listener {
      * when the player clicks the sides or underside of the block. Therefore, we
      * always check build permissions <i>above</i> the clicked block.
      */
-    @EventHandler()
+    @EventHandler(ignoreCancelled = true)
     public void onPlayerInteract(PlayerInteractEvent event) {
         if (event.getMaterial() == Material.END_CRYSTAL && event.getAction() == Action.RIGHT_CLICK_BLOCK) {
             Block destination = event.getClickedBlock().getRelative(BlockFace.UP);
