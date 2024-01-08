@@ -3,8 +3,8 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>nu.nerd</groupId>
 	<name>SafeCrystals</name>
-	<artifactId>${project.name}</artifactId>
-	<version>1.0.4</version>
+	<artifactId>SafeCrystals</artifactId>
+	<version>1.0.5</version>
 	<packaging>jar</packaging>
 	<description>Prevent Ender Crystals from exploding and breaking blocks or damaging entities.</description>
 	<url>https://github.com/totemo/${project.name}</url>
@@ -23,14 +23,14 @@
 		</repository>
 		<repository>
 			<id>sk89q-repo</id>
-			<url>http://maven.sk89q.com/repo/</url>
+			<url>https://maven.enginehub.org/repo/</url>
 		</repository>
 	</repositories>
 	<dependencies>
 		<dependency>
 			<groupId>org.spigotmc</groupId>
 			<artifactId>spigot-api</artifactId>
-			<version>1.15.2-R0.1-SNAPSHOT</version>
+			<version>1.20.2-R0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.sk89q.worldguard</groupId>
