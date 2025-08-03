@@ -28,10 +28,10 @@ import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 /**
  * Prevent Ender Crystals from exploding and breaking blocks or damaging
  * entities.
- *
+ * <p>
  * Players who have permission to build in a WorldGuard region can break the
  * crystals into dropped items.
- *
+ * <p>
  * WorldGuard build permission is checked before allowing a player to place an
  * Ender Crystal in a region.
  */
@@ -76,7 +76,7 @@ public class SafeCrystals extends JavaPlugin implements Listener {
     // ------------------------------------------------------------------------
     /**
      * Prevent Ender Crystals from being damaged by other entities.
-     *
+     * <p>
      * If the damager is a player who can build, drop the crystal as an item.
      * Projectiles are handled the same as the player who shot them.
      */
@@ -85,7 +85,7 @@ public class SafeCrystals extends JavaPlugin implements Listener {
         Entity entity = event.getEntity();
         if (entity.getType() == EntityType.ENDER_CRYSTAL) {
             if (isDragonFightCrystal(entity.getLocation())) {
-                // Vanilla handlilng.
+                // Vanilla handling.
                 return;
             }
 
@@ -93,8 +93,7 @@ public class SafeCrystals extends JavaPlugin implements Listener {
 
             if (event.getDamager() instanceof Player) {
                 tryBreakEnderCrystal(entity, (Player) event.getDamager());
-            } else if (event.getDamager() instanceof Projectile) {
-                Projectile projectile = (Projectile) event.getDamager();
+            } else if (event.getDamager() instanceof Projectile projectile) {
                 if (projectile.getShooter() instanceof Player) {
                     tryBreakEnderCrystal(entity, (Player) projectile.getShooter());
                 }
@@ -105,7 +104,7 @@ public class SafeCrystals extends JavaPlugin implements Listener {
     // ------------------------------------------------------------------------
     /**
      * Check that a player can build before placing an Ender Crystal.
-     *
+     * <p>
      * Minecraft will place an Ender Crystal on top of obsidian or bedrock even
      * when the player clicks the sides or underside of the block. Therefore, we
      * always check build permissions <i>above</i> the clicked block.
@@ -113,7 +112,10 @@ public class SafeCrystals extends JavaPlugin implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onPlayerInteract(PlayerInteractEvent event) {
         if (event.getMaterial() == Material.END_CRYSTAL && event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            Block destination = event.getClickedBlock().getRelative(BlockFace.UP);
+            Block clicked = event.getClickedBlock();
+            if (clicked == null) return;
+
+            Block destination = clicked.getRelative(BlockFace.UP);
             if (!canBuild(event.getPlayer(), destination.getLocation())) {
                 event.setCancelled(true);
             }
@@ -128,6 +130,7 @@ public class SafeCrystals extends JavaPlugin implements Listener {
      * @param player the player.
      */
     protected void tryBreakEnderCrystal(Entity crystal, Player player) {
+        if (!crystal.isValid()) return;
         Location loc = crystal.getLocation();
         if (canBuild(player, loc)) {
             crystal.remove();
@@ -148,17 +151,17 @@ public class SafeCrystals extends JavaPlugin implements Listener {
     /**
      * Return true if the crystal is in a position that can be used to summon
      * the dragon.
-     *
+     * <p>
      * When summoning the dragon, players can break the crystals on the frame
      * before the dragon CreatureSpawnEvent (reason DEFAULT) occurs, and
-     * potentially recover them, if they don't burn up in the fire underneath.
+     * potentially recover them if they don't burn up in the fire underneath.
      * This method is used to detect that situation and prevent recovery of the
      * crystals.
-     *
+     * <p>
      * Getting delicate about the exact coordinates of the crystal won't work
      * because a determined player will move the crystals with pistons
-     * (verified). Any crystals too close to the portal would normally be blown
-     * up by the explosion when the dragon spawns, anyway.
+     * (verified). The explosion would normally blow
+     * up any crystals too close to the portal when the dragon spawns, anyway.
      *
      * @param loc the location of the crystal.
      * @return true if the crystal is in a position that can be used to summon
@@ -187,7 +190,7 @@ public class SafeCrystals extends JavaPlugin implements Listener {
     // ------------------------------------------------------------------------
     /**
      * Return true if the crystal is associated with the dragon fight.
-     * 
+     * <p>
      * For this purpose, any crystal on bedrock in the end is assumed to be part
      * of the dragon fight. These crystals are not protected (they will behave
      * as in vanilla).
@@ -197,8 +200,7 @@ public class SafeCrystals extends JavaPlugin implements Listener {
      */
     private static boolean isDragonFightCrystal(Location loc) {
         Block blockUnder = loc.getBlock().getRelative(0, -1, 0);
-        return loc.getWorld().getEnvironment() == Environment.THE_END &&
-               blockUnder != null && blockUnder.getType() == Material.BEDROCK;
+        return loc.getWorld().getEnvironment() == Environment.THE_END && blockUnder.getType() == Material.BEDROCK;
     }
 
     // ------------------------------------------------------------------------
